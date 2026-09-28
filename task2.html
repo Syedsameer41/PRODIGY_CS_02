@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Image Encryption Tool</title>
+</head>
+
+<body>
+
+    <h1>Pixel Image Encryption Tool</h1>
+
+    <input type="file" id="imageInput" accept="image/*">
+
+    <br><br>
+
+    <button id="encryptButton">Encrypt Image</button>
+    <button id="decryptButton">Decrypt Image</button>
+    <button id="saveButton">Save Image</button>
+
+    <br><br>
+
+    <canvas id="canvas"></canvas>
+
+
+<script>
+
+let imageInput = document.getElementById("imageInput");
+
+let encryptButton = document.getElementById("encryptButton");
+let decryptButton = document.getElementById("decryptButton");
+let saveButton = document.getElementById("saveButton");
+
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+
+let key = 50;
+
+
+// ===============================
+// LOAD IMAGE
+// ===============================
+
+imageInput.addEventListener("change", function () {
+
+    let imageFile = imageInput.files[0];
+
+    if (!imageFile) {
+        return;
+    }
+
+    let imageURL = URL.createObjectURL(imageFile);
+
+    let img = new Image();
+
+    img.src = imageURL;
+
+    img.onload = function () {
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.drawImage(img, 0, 0);
+
+        URL.revokeObjectURL(imageURL);
+
+        console.log("Image Successfully Loaded!");
+
+    };
+
+});
+
+
+// ===============================
+// ENCRYPT IMAGE
+// ===============================
+
+encryptButton.addEventListener("click", function () {
+
+    let imageData = ctx.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    let data = imageData.data;
+
+
+    for (let i = 0; i < data.length; i += 4) {
+
+        // Red
+        data[i] = (data[i] + key) % 256;
+
+        // Green
+        data[i + 1] = (data[i + 1] + key) % 256;
+
+        // Blue
+        data[i + 2] = (data[i + 2] + key) % 256;
+
+        // Alpha is not changed
+
+    }
+
+
+    ctx.putImageData(imageData, 0, 0);
+
+    console.log("Image Encrypted!");
+
+});
+
+
+// ===============================
+// DECRYPT IMAGE
+// ===============================
+
+decryptButton.addEventListener("click", function () {
+
+    let imageData = ctx.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    let data = imageData.data;
+
+
+    for (let i = 0; i < data.length; i += 4) {
+
+        // Red
+        data[i] = (data[i] - key + 256) % 256;
+
+        // Green
+        data[i + 1] = (data[i + 1] - key + 256) % 256;
+
+        // Blue
+        data[i + 2] = (data[i + 2] - key + 256) % 256;
+
+        // Alpha is not changed
+
+    }
+
+
+    ctx.putImageData(imageData, 0, 0);
+
+    console.log("Image Decrypted!");
+
+});
+
+
+// ===============================
+// SAVE IMAGE
+// ===============================
+
+saveButton.addEventListener("click", function () {
+
+    canvas.toBlob(function (blob) {
+
+        let url = URL.createObjectURL(blob);
+
+        let link = document.createElement("a");
+
+        link.href = url;
+
+        link.download = "encrypted-image.png";
+
+        link.click();
+
+        URL.revokeObjectURL(url);
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
